@@ -26,7 +26,7 @@
 #define motorPin4  13               // IN4 pin on the ULN2003A driver
 
 int stepsPerRevolution = 64;        // steps per revolution
-float degreePerRevolution = 5.625;  // degree per revolution
+float degreePerRevolution = 11.25;  // degree per revolution
 
 /*
  * AccelStepper::FULL2WIRE (2) means: 2 wire stepper (2 pins needed). 
@@ -42,12 +42,10 @@ AccelStepper stepper(AccelStepper::FULL4WIRE, motorPin1, motorPin3, motorPin2, m
 void setup() {
   Serial.begin(9600);               // initialise the serial monitor
 
-  stepper.setMaxSpeed(1000.0);      // set the max motor speed
-  stepper.setAcceleration(200.0);   // set the acceleration
+  stepper.setMaxSpeed(200.0);      // set the max motor speed
+  stepper.setAcceleration(1000.0);   // set the acceleration
   stepper.setSpeed(200);            // set the current speed
-
-  stepper.moveTo(degToSteps(calibratedDeg(360)));   // order the motor to rotate 90 degrees forward
-
+  stepper.moveTo(fullRotationsToSteps(2));
 }
 
 void loop() {
@@ -67,10 +65,7 @@ float degToSteps(float deg) {
   return (stepsPerRevolution / degreePerRevolution) * deg;
 }
 
-
-/*
- * Makes the degrees for the mtotor actually correct because it spins an extra 90 degrees for some reason 
- */
-int calibratedDeg(int deg) {
-  return deg - 90;
+float fullRotationsToSteps(float rotations) {
+  return degToSteps(360.0 * rotations);
 }
+
