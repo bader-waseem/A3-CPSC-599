@@ -1,4 +1,4 @@
-/*
+ /*
  * Bas on Tech - 28BYJ-48 stepper motor with ULN2003A driver
  * This course is part of the courses on https://arduino-tutorials.net
  *  
@@ -39,16 +39,42 @@ float degreePerRevolution = 11.25;  // degree per revolution
  */
 AccelStepper stepper(AccelStepper::FULL4WIRE, motorPin1, motorPin3, motorPin2, motorPin4);
 
+#include <Keypad.h>
+
+const byte ROWS = 4; 
+const byte COLS = 4; 
+
+char hexaKeys[ROWS][COLS] = {
+  {'1', '2', '3' ,'A'},
+  {'4', '5', '6', 'B'},
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'}
+};
+
+byte rowPins[ROWS] = {9, 8, 7, 6}; 
+byte colPins[COLS] = {5, 4, 3, 2}; 
+char numBuff[2] = {' ', '\0'};
+int money;
+
+Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+
 void setup() {
   Serial.begin(9600);               // initialise the serial monitor
 
   stepper.setMaxSpeed(200.0);      // set the max motor speed
   stepper.setAcceleration(1000.0);   // set the acceleration
   stepper.setSpeed(200);            // set the current speed
-  stepper.moveTo(fullRotationsToSteps(2));
 }
 
 void loop() {
+  char keyPressed = customKeypad.getKey();
+  if (keyPressed != NO_KEY && !stepper.isRunning() && stepper.distanceToGo() == 0) {
+    stepper.setCurrentPosition(0);
+    stepper.setSpeed(200); // This is here because the above method call resets speed to 0
+    numBuff[0] = keyPressed;
+    money = atoi(numBuff);
+    stepper.moveTo(fullRotationsToSteps(float(money)));
+  }
   stepper.run();                    // start moving the motor
 }
 
@@ -68,4 +94,3 @@ float degToSteps(float deg) {
 float fullRotationsToSteps(float rotations) {
   return degToSteps(360.0 * rotations);
 }
-
